@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>淼淼的PET备考游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <div class="nav-left">
+                <h1><i class="fas fa-graduation-cap"></i> PET备考乐园</h1>
+                <p class="subtitle">为淼淼准备的英语学习游戏</p>
+            </div>
+            <div class="nav-right">
+                <div class="stats">
+                    <span class="stat-item"><i class="fas fa-star"></i> 积分: <span id="points">0</span></span>
+                    <span class="stat-item"><i class="fas fa-trophy"></i> 等级: <span id="level">1</span></span>
+                    <span class="stat-item"><i class="fas fa-fire"></i> 连续学习: <span id="streak">0</span>天</span>
+                </div>
+                <button class="btn-profile" onclick="showProfile()">
+                    <i class="fas fa-user"></i> 个人中心
+                </button>
+            </div>
+        </nav>
+
+        <!-- 主游戏区域 -->
+        <div class="game-container">
+            <!-- 游戏选择卡片 -->
+            <div class="game-cards">
+                <div class="card game-card" onclick="startGame('wordMemory')">
+                    <div class="card-icon word-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>单词记忆卡片</h3>
+                    <p>翻转卡片，记忆单词和释义</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 40%"></div>
+                        <span>已掌握: 40%</span>
+                    </div>
+                </div>
+
+                <div class="card game-card" onclick="startGame('spelling')">
+                    <div class="card-icon spelling-icon">
+                        <i class="fas fa-spell-check"></i>
+                    </div>
+                    <h3>拼写游戏</h3>
+                    <p>拼写正确的单词，锻炼拼写能力</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 25%"></div>
+                        <span>已掌握: 25%</span>
+                    </div>
+                </div>
+
+                <div class="card game-card" onclick="startGame('match')">
+                    <div class="card-icon match-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h3>词义配对</h3>
+                    <p>单词与释义配对，限时挑战</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 60%"></div>
+                        <span>已掌握: 60%</span>
+                    </div>
+                </div>
+
+                <div class="card game-card" onclick="startGame('grammar')">
+                    <div class="card-icon grammar-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>语法挑战</h3>
+                    <p>选择题、填空题测试语法</p>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 30%"></div>
+                        <span>已掌握: 30%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 词汇列表 -->
+            <div class="vocab-section">
+                <h2><i class="fas fa-book-open"></i> 今日词汇 (Chapter 1)</h2>
+                <div class="vocab-list" id="vocabList">
+                    <!-- 词汇将通过JS动态加载 -->
+                </div>
+                <div class="actions">
+                    <button class="btn-action" onclick="speakAllWords()">
+                        <i class="fas fa-volume-up"></i> 全部朗读
+                    </button>
+                    <button class="btn-action" onclick="markAllLearned()">
+                        <i class="fas fa-check-circle"></i> 标记全部已学
+                    </button>
+                </div>
+            </div>
+
+            <!-- 成就展示 -->
+            <div class="achievement-section">
+                <h2><i class="fas fa-trophy"></i> 成就墙</h2>
+                <div class="achievement-list">
+                    <div class="achievement completed">
+                        <i class="fas fa-medal gold"></i>
+                        <span>初次登录</span>
+                    </div>
+                    <div class="achievement completed">
+                        <i class="fas fa-medal silver"></i>
+                        <span>完成10个单词</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-medal bronze"></i>
+                        <span>连续学习7天</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-crown"></i>
+                        <span>通关所有章节</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <footer class="footer">
+            <div class="footer-nav">
+                <button class="nav-btn active" onclick="switchTab('home')">
+                    <i class="fas fa-home"></i> 首页
+                </button>
+                <button class="nav-btn" onclick="switchTab('progress')">
+                    <i class="fas fa-chart-line"></i> 进度
+                </button>
+                <button class="nav-btn" onclick="switchTab('chapters')">
+                    <i class="fas fa-layer-group"></i> 章节
+                </button>
+                <button class="nav-btn" onclick="switchTab('settings')">
+                    <i class="fas fa-cog"></i> 设置
+                </button>
+            </div>
+            <div class="footer-info">
+                <p>为淼淼定制 • 当前时间: <span id="currentTime"></span></p>
+            </div>
+        </footer>
+
+        <!-- 简化的模态框（游戏进行时显示） -->
+        <div class="modal" id="gameModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="gameTitle">单词记忆卡片</h2>
+                    <button class="close-btn" onclick="closeGame()">&times;</button>
+                </div>
+                <div class="modal-body" id="gameContent">
+                    <!-- 游戏内容动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JS -->
+    <script src="js/vocabulary.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

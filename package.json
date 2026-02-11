@@ -1,0 +1,22 @@
+{
+  "name": "miao-pet-game",
+  "version": "1.0.0",
+  "description": "淼淼的PET备考英语游戏 - 专为9岁女孩定制",
+  "main": "index.html",
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "dev": "echo 'This is a static site, no build step required'",
+    "start": "serve .",
+    "deploy": "echo 'Deploy using Vercel CLI or web interface'"
+  },
+  "keywords": [
+    "education",
+    "english-learning",
+    "pet-exam",
+    "kids-game"
+  ],
+  "author": "爸爸为淼淼定制",
+  "license": "MIT"
+}
