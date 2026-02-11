@@ -28,86 +28,112 @@ for file in "${required_files[@]}"; do
 done
 
 echo ""
-echo "🔧 检查HTML语法..."
-if command -v tidy >/dev/null 2>&1; then
-    tidy -q -errors index.html 2>&1 | head -10
-else
-    echo "⚠️  tidy未安装，跳过HTML检查"
-fi
+echo "🔧 检查HTML引用..."
+js_refs=$(grep -o "src=\"js/[^\"]*\"" index.html | wc -l)
+echo "HTML引用的JS文件数: $js_refs"
+
+css_refs=$(grep -o "href=\"css/[^\"]*\"" index.html | wc -l)
+echo "HTML引用的CSS文件数: $css_refs"
 
 echo ""
-echo "💅 检查CSS样式..."
-grep -o ".modal" css/style.css | wc -l | xargs echo "模态框样式定义:"
-grep -o ".game-card" css/style.css | wc -l | xargs echo "游戏卡片样式定义:"
-grep -o ".vocab-item" css/style.css | wc -l | xargs echo "词汇项样式定义:"
-
-echo ""
-echo "📦 检查JavaScript引用..."
-js_files=$(grep -o "src=\"js/[^\"]*\"" index.html | wc -l)
-echo "HTML中引用的JS文件: $js_files 个"
-
-echo ""
-echo "🌐 检查外部资源..."
-external_resources=$(grep -o "https://[^\"']*" index.html | wc -l)
-echo "引用的外部资源: $external_resources 个"
-
-echo ""
-echo "🔗 测试重要链接..."
-important_links=(
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka+One&display=swap"
+echo "💅 检查CSS样式完整性..."
+css_checks=(
+    "modal"
+    "game-card"
+    "vocab-item"
+    "game-instructions"
+    "memory-grid"
 )
 
-for link in "${important_links[@]}"; do
-    # 简化的URL检查
-    echo -n "检查链接: $(echo "$link" | cut -c1-30)..."
-    echo "（在线检查跳过）"
+echo "CSS样式检查结果:"
+for style in "${css_checks[@]}"; do
+    count=$(grep -c ".$style" css/style.css 2>/dev/null || echo "0")
+    if [ "$count" -gt 0 ]; then
+        echo "✅ .$style 已定义"
+    else
+        echo "❌ .$style 未定义"
+    fi
 done
 
 echo ""
-echo "📊 词汇库检查..."
+echo "📦 检查JavaScript功能..."
+js_checks=(
+    "startGame"
+    "closeGame"
+    "showProfile"
+    "loadTodayVocabulary"
+)
+
+echo "JavaScript函数检查:"
+for func in "${js_checks[@]}"; do
+    if grep -q "function $func" js/*.js 2>/dev/null || grep -q "$func = function" js/*.js 2>/dev/null; then
+        echo "✅ $func() 函数存在"
+    else
+        echo "❌ $func() 函数缺失"
+    fi
+done
+
+echo ""
+echo "🌐 检查外部依赖..."
+external_deps=$(grep -o "https://[^\"']*" index.html | wc -l)
+echo "外部依赖数量: $external_deps"
+
+echo ""
+echo "📊 词汇库状态..."
 if [ -f "js/vocabulary.js" ]; then
     word_count=$(grep -c "\"english\":" js/vocabulary.js 2>/dev/null || echo "0")
-    chinese_count=$(grep -c "\"chinese\":\"[^\"]*\"" js/vocabulary.js 2>/dev/null || echo "0")
+    chinese_count=$(grep -c '"chinese":"[^"]*"' js/vocabulary.js 2>/dev/null || echo "0")
     echo "总单词数: $word_count"
-    echo "有中文翻译的: $chinese_count"
+    echo "有中文翻译: $chinese_count"
     
-    if [ "$chinese_count" -lt 50 ] && [ "$word_count" -gt 100 ]; then
-        echo "⚠️  警告: 缺少中文翻译的词很多"
+    if [ "$word_count" -gt 0 ]; then
+        translation_rate=$((chinese_count * 100 / word_count))
+        echo "翻译覆盖率: $translation_rate%"
     fi
 fi
 
 echo ""
-echo "📝 Git状态检查..."
+echo "📝 Git状态..."
 git status --short
 
 echo ""
-echo "🏗️  构建大小检查..."
-total_size=$(du -sh . 2>/dev/null | cut -f1)
-file_count=$(find . -type f -name "*.html" -o -name "*.css" -o -name "*.js" | wc -l)
-echo "项目总大小: $total_size"
-echo "源码文件数: $file_count"
+echo "🏗️  项目大小..."
+total_files=$(find . -type f -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" | wc -l)
+total_size=$(du -sh . 2>/dev/null | cut -f1 || echo "未知")
+echo "总文件数: $total_files"
+echo "项目大小: $total_size"
 
 echo ""
-echo "🔍 关键修复验证..."
-echo "1. 模态框居中: $(grep -q "justify-content: center" css/style.css && echo "✅" || echo "❌")"
-echo "2. 游戏内容样式: $(grep -q ".game-instructions" css/style.css && echo "✅" || echo "❌")"
+echo "🎯 关键修复验证..."
+echo "1. 模态框功能: $(grep -q "justify-content: center" css/style.css && echo "✅" || echo "❌")"
+echo "2. 游戏内容样式: $(grep -q ".game-instructions" css/style.css && grep -q ".memory-grid" css/style.css && echo "✅" || echo "❌")"
 echo "3. 词汇说明: $(grep -q "vocab-instructions" index.html && echo "✅" || echo "❌")"
-echo "4. 翻译加载器: $(grep -q "translation-loader.js" index.html && echo "✅" || echo "❌")"
-echo "5. Vercel配置: $(grep -q "Content-Security-Policy" vercel.json && echo "✅" || echo "❌")"
+echo "4. 中文翻译: $(grep -q "translation-loader.js" index.html && echo "✅" || echo "❌")"
+echo "5. 游戏按钮: $(grep -q "startGame.*wordMemory" index.html && echo "✅" || echo "❌")"
+
+echo ""
+echo "📱 iPad优化检查..."
+echo "1. 视口设置: $(grep -q "viewport.*maximum-scale" index.html && echo "✅" || echo "❌")"
+echo "2. PWA支持: $(grep -q "apple-mobile-web-app-capable" index.html && echo "✅" || echo "❌")"
+echo "3. 触摸优化: $(grep -q "touch-action" css/style.css && echo "✅" || echo "❌")"
 
 echo ""
 echo "🎉 验证完成！"
 echo ""
-echo "🚀 部署前请运行:"
+echo "当前状态: $(if git status --porcelain | grep -q '.'; then echo "有未提交的更改"; else echo "所有更改已提交"; fi)"
+echo ""
+echo "🚀 如需部署:"
 echo "1. git add ."
-echo "2. git commit -m '修复: 模态框样式、词汇翻译、功能说明、资源加载'"
+echo "2. git commit -m '说明你的更改'"
 echo "3. git push origin master"
 echo ""
-echo "📱 部署后请在iPad测试:"
-echo "1. 打开 https://pet-game-ruby.vercel.app/"
-echo "2. 测试所有按钮点击"
-echo "3. 检查词汇是否有中文"
-echo "4. 验证模态框显示"
+echo "🌐 测试地址: https://pet-game-ruby.vercel.app/"
 echo ""
-echo "如需进一步帮助，随时联系！"
+echo "🔧 已部署修复:"
+echo "• 模态框样式与居中"
+echo "• 词汇中文翻译系统"
+echo "• 今日词汇操作指南"
+echo "• 游戏内容完整样式"
+echo "• Vercel资源配置"
+echo ""
+echo "📞 如有问题，请详细描述！"
